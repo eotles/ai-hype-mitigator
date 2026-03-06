@@ -9,7 +9,7 @@ import matplotlib.patches as mpatches
 from matplotlib.patches import FancyBboxPatch, FancyArrowPatch
 import matplotlib.patheffects as pe
 
-os.makedirs('docs/patent/figures', exist_ok=True)
+os.makedirs('figures', exist_ok=True)
 
 
 def draw_box(ax, x, y, w, h, label, sublabel=None, color='#ddeeff', fontsize=9):
@@ -129,7 +129,7 @@ def fig1():
     ax.text(5.60, 5.95, 'publish/\nblock', fontsize=7.5, color='#444')
 
     plt.tight_layout(pad=0.5)
-    plt.savefig('docs/patent/figures/fig1.png', dpi=150, bbox_inches='tight',
+    plt.savefig('figures/fig1.png', dpi=150, bbox_inches='tight',
                 facecolor='white')
     plt.close()
     print('Saved fig1.png')
@@ -212,7 +212,7 @@ def fig2():
     arrow(ax, 6.2, 7.35, 6.2, 2.05)
 
     plt.tight_layout(pad=0.3)
-    plt.savefig('docs/patent/figures/fig2.png', dpi=150, bbox_inches='tight',
+    plt.savefig('figures/fig2.png', dpi=150, bbox_inches='tight',
                 facecolor='white')
     plt.close()
     print('Saved fig2.png')
@@ -262,7 +262,7 @@ def fig3():
     arrow(ax, 9.00, 2.75, 9.60, 2.75)    # Formatter → output
 
     plt.tight_layout(pad=0.3)
-    plt.savefig('docs/patent/figures/fig3.png', dpi=150, bbox_inches='tight',
+    plt.savefig('figures/fig3.png', dpi=150, bbox_inches='tight',
                 facecolor='white')
     plt.close()
     print('Saved fig3.png')
@@ -344,7 +344,7 @@ def fig4():
     ax.text(7.60, 0.45, 'Try Again', fontsize=7.5, ha='center', color='#555')
 
     plt.tight_layout(pad=0.3)
-    plt.savefig('docs/patent/figures/fig4.png', dpi=150, bbox_inches='tight',
+    plt.savefig('figures/fig4.png', dpi=150, bbox_inches='tight',
                 facecolor='white')
     plt.close()
     print('Saved fig4.png')
@@ -355,4 +355,4 @@ if __name__ == '__main__':
     fig2()
     fig3()
     fig4()
-    print('All figures saved to docs/patent/figures/')
+    print('All figures saved to figures/')
