@@ -21,13 +21,13 @@ def img_tag(path):
 
 
 FIGURE_IMAGES = {
-    'FIG. 1': img_tag('docs/patent/figures/fig1.png'),
-    'FIG. 2': img_tag('docs/patent/figures/fig2.png'),
-    'FIG. 3': img_tag('docs/patent/figures/fig3.png'),
-    'FIG. 4': img_tag('docs/patent/figures/fig4.png'),
+    'FIG. 1': img_tag('figures/fig1.png'),
+    'FIG. 2': img_tag('figures/fig2.png'),
+    'FIG. 3': img_tag('figures/fig3.png'),
+    'FIG. 4': img_tag('figures/fig4.png'),
 }
 
-with open('patent/application.md', 'r') as f:
+with open('application.md', 'r') as f:
     md_content = f.read()
 
 html_body = markdown.markdown(md_content, extensions=['fenced_code', 'tables'])
@@ -81,5 +81,5 @@ html = f"""<!DOCTYPE html>
 </body>
 </html>"""
 
-HTML(string=html, base_url='.').write_pdf('docs/patent/application.pdf')
-print("PDF generated: docs/patent/application.pdf")
+HTML(string=html, base_url='.').write_pdf('application.pdf')
+print("PDF generated: application.pdf")
