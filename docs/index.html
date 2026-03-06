@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Hype Mitigator — Verified AI Discourse</title>
+  <style>
+    :root {
+      --bg: #f0f4f8;
+      --surface: #ffffff;
+      --surface-alt: #f8fafc;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --success: #16a34a;
+      --warning: #d97706;
+      --danger: #dc2626;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --radius: 14px;
+      --shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+      --shadow-lg: 0 10px 25px rgba(0,0,0,0.1);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ── */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: var(--shadow);
+    }
+    .logo {
+      width: 38px; height: 38px;
+      background: linear-gradient(135deg, #2563eb, #7c3aed);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; flex-shrink: 0;
+    }
+    .logo-text h1 {
+      font-size: 1.1rem; font-weight: 800;
+      background: linear-gradient(135deg, #2563eb, #7c3aed);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .logo-text p { font-size: 0.72rem; color: var(--text-muted); }
+    .header-badge {
+      margin-left: auto;
+      background: #eff6ff; border: 1px solid #bfdbfe;
+      color: var(--primary); border-radius: 20px;
+      padding: 4px 12px; font-size: 0.75rem; font-weight: 600;
+    }
+
+    /* ── MAIN ── */
+    main { max-width: 620px; margin: 28px auto; padding: 0 16px 48px; }
+
+    /* ── CARD ── */
+    .card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+
+    /* ── STATE PANELS ── */
+    .panel { display: none; padding: 24px; animation: fadeUp 0.3s ease; }
+    #app.state-compose   .panel-compose    { display: block; }
+    #app.state-analyzing .panel-analyzing  { display: block; }
+    #app.state-safe      .panel-safe       { display: block; }
+    #app.state-challenged .panel-challenged { display: block; }
+    #app.state-success   .panel-success    { display: block; }
+    #app.state-failure   .panel-failure    { display: block; }
+
+    /* ── COMPOSE ── */
+    .examples-bar { margin-bottom: 16px; }
+    .examples-label {
+      font-size: 0.72rem; font-weight: 600; color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: .06em; margin-bottom: 8px;
+    }
+    .pills { display: flex; flex-wrap: wrap; gap: 6px; }
+    .pill {
+      background: var(--bg); border: 1.5px solid var(--border);
+      border-radius: 20px; padding: 5px 12px;
+      font-size: 0.78rem; color: var(--text-muted);
+      cursor: pointer; transition: all .15s;
+    }
+    .pill:hover { background: #eff6ff; border-color: var(--primary); color: var(--primary); }
+
+    .composer-wrap {
+      display: flex; gap: 12px; align-items: flex-start;
+      border-top: 1px solid var(--border); padding-top: 16px;
+    }
+    .avatar {
+      width: 44px; height: 44px; border-radius: 50%;
+      background: linear-gradient(135deg, #2563eb, #7c3aed);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; flex-shrink: 0;
+    }
+    #postContent {
+      flex: 1; border: none; outline: none; resize: none;
+      font-size: 1.05rem; font-family: inherit;
+      color: var(--text); background: transparent;
+      min-height: 90px; line-height: 1.55;
+    }
+    #postContent::placeholder { color: var(--text-muted); }
+    .composer-footer {
+      display: flex; align-items: center; justify-content: space-between;
+      border-top: 1px solid var(--border); padding-top: 14px; margin-top: 4px;
+    }
+    .char-count { font-size: 0.82rem; color: var(--text-muted); }
+    .char-count.near { color: var(--warning); }
+    .char-count.over { color: var(--danger); }
+
+    /* ── ANALYZING ── */
+    .analyzing-body { text-align: center; }
+    .spinner {
+      width: 42px; height: 42px;
+      border: 3px solid var(--border); border-top-color: var(--primary);
+      border-radius: 50%; animation: spin .8s linear infinite;
+      margin: 0 auto 14px;
+    }
+    .scan-title { font-size: 1rem; font-weight: 700; margin-bottom: 4px; }
+    .scan-sub { font-size: 0.83rem; color: var(--text-muted); margin-bottom: 20px; }
+    .post-preview-box {
+      background: var(--surface-alt); border: 1px solid var(--border);
+      border-radius: 10px; padding: 14px 16px;
+      font-size: 0.9rem; color: var(--text-muted);
+      text-align: left; margin-bottom: 16px;
+      position: relative; overflow: hidden;
+    }
+    .post-preview-box mark {
+      background: #fef2f2; color: var(--danger);
+      border-radius: 3px; padding: 0 2px;
+    }
+    .scan-line {
+      position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, transparent, var(--primary), transparent);
+      animation: scanDown 1.4s ease-in-out infinite;
+    }
+    .keyword-chips { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
+    .kchip {
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 20px; padding: 3px 10px;
+      font-size: 0.74rem; color: var(--text-muted);
+      transition: all .25s;
+    }
+    .kchip.hit {
+      background: #fef2f2; border-color: #fca5a5;
+      color: var(--danger); font-weight: 600;
+      animation: chipPop .3s ease;
+    }
+
+    /* ── SAFE ── */
+    .safe-body { text-align: center; padding: 12px 0; }
+    .big-icon { font-size: 52px; margin-bottom: 10px; }
+    .safe-body h2 { font-size: 1.3rem; font-weight: 700; color: var(--success); margin-bottom: 6px; }
+    .safe-body p { color: var(--text-muted); font-size: 0.88rem; margin-bottom: 20px; }
+
+    /* ── CHALLENGED ── */
+    .challenge-banner {
+      background: linear-gradient(135deg, #fef3c7, #fde68a);
+      border-bottom: 1px solid #fbbf24;
+      margin: -24px -24px 20px;
+      padding: 16px 20px;
+      display: flex; align-items: flex-start; gap: 12px;
+    }
+    .challenge-banner-icon { font-size: 26px; flex-shrink: 0; }
+    .challenge-banner h2 { font-size: 1rem; font-weight: 700; color: #92400e; }
+    .challenge-banner p { font-size: 0.8rem; color: #a16207; margin-top: 2px; }
+    .flagged-preview {
+      background: var(--surface-alt); border: 1px solid var(--border);
+      border-radius: 8px; padding: 12px 14px;
+      font-size: 0.88rem; color: var(--text-muted);
+      margin-bottom: 14px;
+    }
+    .kw-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 20px; }
+    .kw-tag {
+      background: #fef2f2; border: 1px solid #fca5a5;
+      color: var(--danger); border-radius: 12px;
+      padding: 2px 10px; font-size: 0.73rem; font-weight: 600;
+    }
+
+    /* Problem Card */
+    .problem-card {
+      background: var(--surface-alt); border: 1px solid var(--border);
+      border-radius: 10px; padding: 18px 20px; margin-bottom: 18px;
+    }
+    .prob-badge {
+      display: inline-block;
+      background: #eff6ff; color: var(--primary); border: 1px solid #bfdbfe;
+      border-radius: 12px; padding: 2px 10px;
+      font-size: 0.7rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .06em;
+      margin-bottom: 12px;
+    }
+    .prob-question {
+      font-size: 0.95rem; font-weight: 500; color: var(--text);
+      line-height: 1.6; margin-bottom: 14px;
+    }
+    .math-box {
+      background: #1e293b; color: #e2e8f0;
+      border-radius: 8px; padding: 14px 18px;
+      font-family: 'Fira Code', 'Cascadia Code', 'Courier New', monospace;
+      font-size: 0.88rem; line-height: 1.7;
+      white-space: pre; overflow-x: auto;
+      margin-bottom: 14px;
+    }
+    .code-box {
+      background: #1e293b; color: #a5f3fc;
+      border-radius: 8px; padding: 14px 18px;
+      font-family: 'Fira Code', 'Cascadia Code', 'Courier New', monospace;
+      font-size: 0.83rem; line-height: 1.6;
+      white-space: pre; overflow-x: auto;
+      margin-bottom: 14px;
+    }
+    .options-list { display: flex; flex-direction: column; gap: 8px; }
+    .opt {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 14px;
+      border: 2px solid var(--border);
+      border-radius: 9px; cursor: pointer;
+      transition: all .15s; background: var(--surface);
+    }
+    .opt:hover { border-color: var(--primary); background: #eff6ff; }
+    .opt.selected { border-color: var(--primary); background: #eff6ff; }
+    .opt.correct-opt { border-color: var(--success); background: #f0fdf4; }
+    .opt.wrong-opt { border-color: var(--danger); background: #fef2f2; }
+    .radio-dot {
+      width: 18px; height: 18px;
+      border: 2px solid var(--border); border-radius: 50%;
+      flex-shrink: 0; display: flex;
+      align-items: center; justify-content: center;
+      transition: all .15s;
+    }
+    .opt.selected .radio-dot { border-color: var(--primary); background: var(--primary); }
+    .opt.selected .radio-dot::after {
+      content: ''; width: 6px; height: 6px;
+      background: white; border-radius: 50%;
+    }
+    .opt-text { font-size: 0.88rem; color: var(--text); line-height: 1.4; }
+    .challenge-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+    /* ── SUCCESS ── */
+    .success-banner {
+      background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+      border-bottom: 1px solid #86efac;
+      margin: -24px -24px 20px;
+      padding: 16px 20px;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .success-banner h2 { font-size: 1rem; font-weight: 700; color: #14532d; }
+    .success-banner p { font-size: 0.8rem; color: #166534; margin-top: 2px; }
+    .published-card {
+      background: var(--surface-alt); border: 1px solid var(--border);
+      border-radius: 10px; padding: 14px 16px; margin-bottom: 16px;
+    }
+    .post-meta { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+    .p-avatar {
+      width: 38px; height: 38px; border-radius: 50%;
+      background: linear-gradient(135deg, #2563eb, #7c3aed);
+      display: flex; align-items: center; justify-content: center; font-size: 18px;
+    }
+    .p-name { font-weight: 700; font-size: 0.9rem; display: flex; align-items: center; gap: 6px; }
+    .expert-badge {
+      background: linear-gradient(135deg, #2563eb, #7c3aed);
+      color: white; border-radius: 12px;
+      padding: 2px 9px; font-size: 0.68rem; font-weight: 700;
+    }
+    .p-time { font-size: 0.74rem; color: var(--text-muted); }
+    .post-body { font-size: 0.95rem; color: var(--text); line-height: 1.6; }
+    .explain-box {
+      background: #eff6ff; border: 1px solid #bfdbfe;
+      border-radius: 8px; padding: 12px 14px;
+      font-size: 0.83rem; color: #1e40af;
+      margin-bottom: 16px; line-height: 1.55;
+    }
+    .explain-box strong { display: block; margin-bottom: 3px; }
+
+    /* ── FAILURE ── */
+    .failure-banner {
+      background: linear-gradient(135deg, #ede9fe, #ddd6fe);
+      border-bottom: 1px solid #c4b5fd;
+      margin: -24px -24px 20px;
+      padding: 16px 20px;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .failure-banner h2 { font-size: 1rem; font-weight: 700; color: #3b0764; }
+    .failure-banner p { font-size: 0.8rem; color: #5b21b6; margin-top: 2px; }
+    .draft-box {
+      background: var(--surface-alt); border: 1px solid var(--border);
+      border-radius: 8px; padding: 12px 14px;
+      display: flex; align-items: flex-start; gap: 10px;
+      margin-bottom: 14px;
+    }
+    .draft-icon-wrap { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+    .draft-label { font-size: 0.84rem; font-weight: 600; color: var(--text); }
+    .draft-snippet { font-size: 0.8rem; color: var(--text-muted); margin-top: 2px; }
+    .answer-reveal {
+      background: #fef3c7; border: 1px solid #fbbf24;
+      border-radius: 8px; padding: 12px 14px;
+      font-size: 0.83rem; color: #92400e;
+      margin-bottom: 14px; line-height: 1.55;
+    }
+    .answer-reveal strong { display: block; margin-bottom: 3px; }
+    .learn-section h3 {
+      font-size: 0.82rem; font-weight: 700; color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: .06em; margin-bottom: 8px;
+    }
+    .learn-list { list-style: none; display: flex; flex-direction: column; gap: 6px; margin-bottom: 18px; }
+    .learn-list li {
+      display: flex; align-items: flex-start; gap: 8px;
+      font-size: 0.84rem; color: var(--text-muted);
+    }
+    .learn-list li::before { content: '→'; color: var(--primary); flex-shrink: 0; }
+    .failure-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+    /* ── BUTTONS ── */
+    .btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 9px 18px; border-radius: 8px;
+      font-size: 0.88rem; font-weight: 600;
+      cursor: pointer; border: none; transition: all .15s;
+      font-family: inherit;
+    }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:hover { background: var(--primary-hover); transform: translateY(-1px); }
+    .btn-primary:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+    .btn-ghost {
+      background: var(--bg); color: var(--text);
+      border: 1.5px solid var(--border);
+    }
+    .btn-ghost:hover { background: #e2e8f0; transform: translateY(-1px); }
+    .btn-pill {
+      padding: 10px 28px; border-radius: 24px; font-size: 0.92rem;
+    }
+    .btn-post {
+      background: var(--primary); color: white;
+      padding: 9px 26px; border-radius: 24px;
+      font-size: 0.92rem; font-weight: 700;
+      cursor: pointer; border: none; font-family: inherit;
+      transition: all .15s;
+    }
+    .btn-post:hover { background: var(--primary-hover); transform: translateY(-1px); }
+
+    /* ── HOW IT WORKS ── */
+    .how-card {
+      background: var(--surface); border-radius: var(--radius);
+      border: 1px solid var(--border); box-shadow: var(--shadow);
+      padding: 20px 24px;
+    }
+    .how-card h3 {
+      font-size: 0.78rem; font-weight: 700; color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: .07em; margin-bottom: 14px;
+    }
+    .how-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .how-item { display: flex; align-items: flex-start; gap: 10px; }
+    .how-icon { font-size: 18px; flex-shrink: 0; }
+    .how-text { font-size: 0.82rem; color: var(--text-muted); line-height: 1.5; }
+
+    footer {
+      text-align: center; padding: 20px;
+      font-size: 0.78rem; color: var(--text-muted);
+    }
+    footer a { color: var(--primary); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes scanDown { 0% { top: 0; } 100% { top: 100%; } }
+    @keyframes chipPop {
+      0% { transform: scale(.8); }
+      55% { transform: scale(1.12); }
+      100% { transform: scale(1); }
+    }
+
+    @media (max-width: 600px) {
+      main { padding: 0 10px 40px; margin-top: 16px; }
+      .how-grid { grid-template-columns: 1fr; }
+      header p, .header-badge { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">🛡️</div>
+  <div class="logo-text">
+    <h1>AI Hype Mitigator</h1>
+    <p>Ensuring AI discourse is led by those who understand it</p>
+  </div>
+  <span class="header-badge">Demo</span>
+</header>
+
+<main>
+  <div id="app" class="card state-compose">
+
+    <!-- ══ COMPOSE ══ -->
+    <div class="panel panel-compose">
+      <div class="examples-bar">
+        <p class="examples-label">Try an example post</p>
+        <div class="pills">
+          <button class="pill" onclick="fillExample(0)">ChatGPT is replacing programmers</button>
+          <button class="pill" onclick="fillExample(1)">Neural nets are basically brains</button>
+          <button class="pill" onclick="fillExample(2)">Just had a great lunch 🍝</button>
+          <button class="pill" onclick="fillExample(3)">AGI is months away</button>
+          <button class="pill" onclick="fillExample(4)">Machine learning is overrated hype</button>
+        </div>
+      </div>
+      <div class="composer-wrap">
+        <div class="avatar">👤</div>
+        <textarea id="postContent"
+          placeholder="What AI insights are you sharing today?"
+          maxlength="280"
+          oninput="updateCharCount()"></textarea>
+      </div>
+      <div class="composer-footer">
+        <span class="char-count" id="charCount">0 / 280</span>
+        <button class="btn-post" onclick="submitPost()">Post</button>
+      </div>
+    </div>
+
+    <!-- ══ ANALYZING ══ -->
+    <div class="panel panel-analyzing">
+      <div class="analyzing-body">
+        <div class="spinner"></div>
+        <p class="scan-title">Analyzing content…</p>
+        <p class="scan-sub">Checking for AI-related claims and terminology</p>
+        <div class="post-preview-box" id="scanPreview">
+          <div class="scan-line"></div>
+        </div>
+        <div class="keyword-chips" id="kwChips"></div>
+      </div>
+    </div>
+
+    <!-- ══ SAFE ══ -->
+    <div class="panel panel-safe">
+      <div class="safe-body">
+        <div class="big-icon">✅</div>
+        <h2>Post Published!</h2>
+        <p>No AI content detected — your post goes live without verification.</p>
+        <div class="published-card" style="text-align:left">
+          <div class="post-meta">
+            <div class="p-avatar">👤</div>
+            <div>
+              <div class="p-name">You</div>
+              <div class="p-time">just now</div>
+            </div>
+          </div>
+          <p class="post-body" id="safePostText"></p>
+        </div>
+        <button class="btn btn-ghost btn-pill" onclick="resetApp()">Compose Another Post</button>
+      </div>
+    </div>
+
+    <!-- ══ CHALLENGED ══ -->
+    <div class="panel panel-challenged">
+      <div class="challenge-banner">
+        <span class="challenge-banner-icon">⚠️</span>
+        <div>
+          <h2>AI Expertise Verification Required</h2>
+          <p>Your post contains AI-related content. Prove your expertise to continue.</p>
+        </div>
+      </div>
+
+      <p style="font-size:.8rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Your Post</p>
+      <div class="flagged-preview" id="flaggedPreview"></div>
+
+      <p style="font-size:.8rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Detected AI Keywords</p>
+      <div class="kw-row" id="kwTags"></div>
+
+      <div class="problem-card">
+        <div class="prob-badge" id="probCategory"></div>
+        <div class="prob-question" id="probQuestion"></div>
+        <div id="probExtra"></div>
+        <div class="options-list" id="probOptions"></div>
+      </div>
+
+      <div class="challenge-actions">
+        <button class="btn btn-primary" id="submitBtn" onclick="submitAnswer()" disabled>Submit Answer</button>
+        <button class="btn btn-ghost" onclick="refreshProblem()">🔄 Different Problem</button>
+      </div>
+    </div>
+
+    <!-- ══ SUCCESS ══ -->
+    <div class="panel panel-success">
+      <div class="success-banner">
+        <span style="font-size:26px">✅</span>
+        <div>
+          <h2>Expertise Verified!</h2>
+          <p>Your post has been published with a verified expert badge</p>
+        </div>
+      </div>
+
+      <div class="published-card">
+        <div class="post-meta">
+          <div class="p-avatar">👤</div>
+          <div>
+            <div class="p-name">
+              You&nbsp;<span class="expert-badge">✓ AI Expert</span>
+            </div>
+            <div class="p-time">just now</div>
+          </div>
+        </div>
+        <p class="post-body" id="successPostText"></p>
+      </div>
+
+      <div class="explain-box" id="successExplain"></div>
+      <button class="btn btn-primary btn-pill" onclick="resetApp()">Compose Another Post</button>
+    </div>
+
+    <!-- ══ FAILURE ══ -->
+    <div class="panel panel-failure">
+      <div class="failure-banner">
+        <span style="font-size:26px">📚</span>
+        <div>
+          <h2>Keep Learning!</h2>
+          <p>Your post needs more AI expertise behind it</p>
+        </div>
+      </div>
+
+      <p style="font-size:.88rem;color:var(--text-muted);line-height:1.65;margin-bottom:14px">
+        Building genuine AI expertise takes time and dedication. Your post has been saved as a draft.
+        Once you've strengthened your technical foundations, your contributions to the AI conversation
+        will be far more impactful and credible.
+      </p>
+
+      <div class="draft-box">
+        <div class="draft-icon-wrap">📄</div>
+        <div>
+          <div class="draft-label">Saved as Draft</div>
+          <div class="draft-snippet" id="failureDraft"></div>
+        </div>
+      </div>
+
+      <div class="answer-reveal">
+        <strong>💡 Correct Answer &amp; Explanation</strong>
+        <span id="correctAnswerReveal"></span>
+        <span id="explanationReveal" style="display:block;margin-top:4px;font-size:.8rem"></span>
+      </div>
+
+      <div class="learn-section">
+        <h3>Suggested Learning Resources</h3>
+        <ul class="learn-list">
+          <li>3Blue1Brown — <em>Neural Networks</em> series (YouTube)</li>
+          <li>fast.ai — Practical Deep Learning for Coders (free course)</li>
+          <li>Gilbert Strang — Linear Algebra (MIT OpenCourseWare)</li>
+          <li>Andrej Karpathy — Neural Networks: Zero to Hero (YouTube)</li>
+          <li>Goodfellow et al. — <em>Deep Learning</em> textbook (deeplearningbook.org)</li>
+        </ul>
+      </div>
+
+      <div class="failure-actions">
+        <button class="btn btn-ghost" onclick="viewDraft()">View Draft</button>
+        <button class="btn btn-primary" onclick="tryAgain()">Try Again</button>
+      </div>
+    </div>
+
+  </div><!-- #app -->
+
+  <!-- HOW IT WORKS -->
+  <div class="how-card">
+    <h3>How It Works</h3>
+    <div class="how-grid">
+      <div class="how-item">
+        <span class="how-icon">🔍</span>
+        <span class="how-text">Posts are scanned for AI-related keywords and claims before publication</span>
+      </div>
+      <div class="how-item">
+        <span class="how-icon">🧠</span>
+        <span class="how-text">Flagged posts trigger a technical AI/ML challenge to verify expertise</span>
+      </div>
+      <div class="how-item">
+        <span class="how-icon">✅</span>
+        <span class="how-text">Verified experts post with an <strong>AI Expert</strong> badge for credibility</span>
+      </div>
+      <div class="how-item">
+        <span class="how-icon">📚</span>
+        <span class="how-text">Unverified posts are saved as drafts with curated learning resources</span>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <p>
+    AI Hype Mitigator —
+    <a href="https://github.com/eotles/ai-hype-mitigator" target="_blank">GitHub</a> ·
+    <a href="../patent/application.md" target="_blank">Patent Application</a>
+  </p>
+</footer>
+
+<script>
+// ═══════════════════════════════════════════════════════
+//  DATA
+// ═══════════════════════════════════════════════════════
+
+const EXAMPLE_POSTS = [
+  "Just used ChatGPT to write all my code. AI is going to replace every software engineer by 2025! The singularity is near 🤖",
+  "Neural networks are basically just digital brains that learn exactly like humans do. AI is basically conscious at this point!",
+  "Just had an amazing lunch at the new Italian place downtown. Highly recommend the carbonara 🍝",
+  "AGI is only months away. OpenAI and Anthropic are about to release models with true general intelligence that surpasses all humans.",
+  "Machine learning is completely overrated hype. It's just linear regression with extra steps and a marketing budget."
+];
+
+// Keywords scanned during the animation (representative subset)
+const SCAN_KEYWORDS = [
+  'AI', 'ChatGPT', 'machine learning', 'neural network',
+  'GPT', 'deep learning', 'artificial intelligence', 'AGI'
+];
+
+// Full detection keyword list
+const DETECT_KEYWORDS = [
+  'artificial intelligence', 'machine learning', 'deep learning',
+  'neural network', 'large language model', 'llm', 'gpt', 'gpt-4', 'gpt4',
+  'transformer', 'diffusion model', 'generative ai', 'gen ai',
+  'chatgpt', 'openai', 'anthropic', 'claude', 'gemini', 'copilot',
+  'midjourney', 'stable diffusion', 'dall-e', 'sora', 'mistral',
+  'backpropagation', 'gradient descent', 'attention mechanism',
+  'fine-tuning', 'reinforcement learning', 'rlhf', 'bert',
+  'agi', 'singularity', 'superintelligence', 'sentient ai',
+  'ai will', 'ai can', 'ai is', 'ai has', 'ai are',
+  ' ai ', 'the ai', 'an ai', 'this ai'
+];
+
+const PROBLEM_BANK = [
+  // ── Linear Algebra ──
+  {
+    id: 'la1', category: 'Linear Algebra',
+    question: 'What is the determinant of matrix A?',
+    extra: { type: 'math', content: 'A = | 3  1 |\n    | 2  4 |' },
+    options: ['8', '10', '14', '7'],
+    correct: '10',
+    explanation: 'det(A) = (3)(4) − (1)(2) = 12 − 2 = 10'
+  },
+  {
+    id: 'la2', category: 'Linear Algebra',
+    question: 'For the diagonal matrix A = diag(5, 3), what are its eigenvalues?',
+    extra: { type: 'math', content: 'A = | 5  0 |\n    | 0  3 |' },
+    options: ['5 and 3', '0 and 5', '1 and 3', '8 and 2'],
+    correct: '5 and 3',
+    explanation: 'For a diagonal matrix the eigenvalues are the diagonal entries: 5 and 3.'
+  },
+  {
+    id: 'la3', category: 'Linear Algebra',
+    question: 'What is the rank of matrix B?',
+    extra: { type: 'math', content: 'B = | 1  2  3 |\n    | 2  4  6 |\n    | 0  1  0 |' },
+    options: ['1', '2', '3', '0'],
+    correct: '2',
+    explanation: 'Row 2 = 2 × Row 1, so they are linearly dependent. Two independent rows → rank = 2.'
+  },
+  {
+    id: 'la4', category: 'Linear Algebra',
+    question: 'What is the L2 norm (Euclidean length) of vector v = [3, 4]?',
+    extra: null,
+    options: ['5', '7', '12', '25'],
+    correct: '5',
+    explanation: '‖v‖₂ = √(3² + 4²) = √(9 + 16) = √25 = 5'
+  },
+  {
+    id: 'la5', category: 'Linear Algebra',
+    question: 'Which of the following is NOT a property of a positive-definite matrix?',
+    extra: null,
+    options: [
+      'All eigenvalues are negative',
+      'All eigenvalues are positive',
+      'The quadratic form xᵀAx > 0 for all non-zero x',
+      'It is always invertible'
+    ],
+    correct: 'All eigenvalues are negative',
+    explanation: 'A positive-definite matrix has strictly positive eigenvalues (not negative).'
+  },
+
+  // ── Python / NumPy ──
+  {
+    id: 'py1', category: 'Python / NumPy',
+    question: 'What does the following expression return?',
+    extra: { type: 'code', content: 'import numpy as np\nnp.array([1, 2, 3]) @ np.array([4, 5, 6])' },
+    options: ['32', '[4, 10, 18]', '15', '68'],
+    correct: '32',
+    explanation: 'The @ operator is the dot product: 1×4 + 2×5 + 3×6 = 4 + 10 + 18 = 32.'
+  },
+  {
+    id: 'py2', category: 'Python / NumPy',
+    question: 'What is the output of this code?',
+    extra: { type: 'code', content: 'import numpy as np\nA = np.array([[1, 2],\n              [3, 4]])\nprint(np.trace(A))' },
+    options: ['5', '10', '3', '7'],
+    correct: '5',
+    explanation: 'np.trace() sums the main-diagonal elements: 1 + 4 = 5.'
+  },
+  {
+    id: 'py3', category: 'Python / NumPy',
+    question: 'In PyTorch, what does tensor.detach() do?',
+    extra: null,
+    options: [
+      'Removes the tensor from the computation graph',
+      'Deletes the tensor from memory',
+      'Converts the tensor to a NumPy array',
+      'Resets all gradients to zero'
+    ],
+    correct: 'Removes the tensor from the computation graph',
+    explanation: '.detach() creates a new tensor that shares data but is excluded from gradient tracking.'
+  },
+  {
+    id: 'py4', category: 'Python / NumPy',
+    question: 'Which NumPy function computes the (multiplicative) inverse of a square matrix?',
+    extra: null,
+    options: ['np.linalg.inv()', 'np.inverse()', 'np.matrix.inv()', 'np.linalg.solve()'],
+    correct: 'np.linalg.inv()',
+    explanation: 'np.linalg.inv(A) returns A⁻¹ such that A @ A⁻¹ = I.'
+  },
+
+  // ── Machine Learning ──
+  {
+    id: 'ml1', category: 'Machine Learning',
+    question: 'In the transformer attention formula softmax(QKᵀ / √dₖ)V, why divide by √dₖ?',
+    extra: null,
+    options: [
+      'Prevent dot products from growing too large, which would push softmax into low-gradient regions',
+      'Speed up matrix multiplication',
+      'Normalise the value vectors V',
+      'Ensure the output sums to 1'
+    ],
+    correct: 'Prevent dot products from growing too large, which would push softmax into low-gradient regions',
+    explanation: 'Large dot products saturate the softmax, causing near-zero gradients. Dividing by √dₖ keeps gradients healthy.'
+  },
+  {
+    id: 'ml2', category: 'Machine Learning',
+    question: 'What is the time complexity of standard (dense) self-attention with respect to sequence length n?',
+    extra: null,
+    options: ['O(n²)', 'O(n log n)', 'O(n)', 'O(n³)'],
+    correct: 'O(n²)',
+    explanation: 'Self-attention computes pairwise scores between all n tokens, producing an n × n attention matrix — O(n²).'
+  },
+  {
+    id: 'ml3', category: 'Machine Learning',
+    question: 'What does the ReLU activation function return for an input of −5?',
+    extra: { type: 'math', content: 'ReLU(x) = max(0, x)' },
+    options: ['0', '−5', '5', '0.007'],
+    correct: '0',
+    explanation: 'ReLU(−5) = max(0, −5) = 0. ReLU clamps all negative inputs to zero.'
+  },
+  {
+    id: 'ml4', category: 'Machine Learning',
+    question: 'If the loss is L(w) = w², what is the gradient ∂L/∂w used in gradient descent?',
+    extra: null,
+    options: ['2w', 'w²', 'w/2', '1'],
+    correct: '2w',
+    explanation: 'By the power rule, d/dw(w²) = 2w. Gradient descent then updates w ← w − α·2w.'
+  }
+];
+
+// ═══════════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════════
+
+let S = {
+  stage: 'compose',
+  postText: '',
+  foundKeywords: [],
+  currentProblem: null,
+  selectedAnswer: null,
+  draft: null
+};
+
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+// ═══════════════════════════════════════════════════════
+//  DETECTION
+// ═══════════════════════════════════════════════════════
+
+function detectAI(text) {
+  const lower = ' ' + text.toLowerCase() + ' ';
+  const found = [];
+  for (const kw of DETECT_KEYWORDS) {
+    if (lower.includes(kw.toLowerCase())) {
+      // Store readable version (trim padding)
+      const readable = kw.trim();
+      if (!found.includes(readable)) found.push(readable);
+    }
+  }
+  return { isAI: found.length > 0, keywords: found.slice(0, 8) };
+}
+
+// ═══════════════════════════════════════════════════════
+//  UI HELPERS
+// ═══════════════════════════════════════════════════════
+
+function setState(stage) {
+  S.stage = stage;
+  document.getElementById('app').className = 'card state-' + stage;
+}
+
+function updateCharCount() {
+  const ta = document.getElementById('postContent');
+  const el = document.getElementById('charCount');
+  const n = ta.value.length;
+  el.textContent = n + ' / 280';
+  el.className = 'char-count' + (n > 260 ? ' over' : n > 220 ? ' near' : '');
+}
+
+function fillExample(idx) {
+  const ta = document.getElementById('postContent');
+  ta.value = EXAMPLE_POSTS[idx];
+  updateCharCount();
+  ta.focus();
+}
+
+function getRandomProblem(excludeId = null) {
+  const pool = PROBLEM_BANK.filter(p => p.id !== excludeId);
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+function escapeHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function highlightKeywords(text, keywords) {
+  let out = escapeHtml(text);
+  keywords.forEach(kw => {
+    const safe = kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    out = out.replace(new RegExp('(' + safe + ')', 'gi'), '<mark>$1</mark>');
+  });
+  return out;
+}
+
+// ═══════════════════════════════════════════════════════
+//  CHALLENGE RENDERING
+// ═══════════════════════════════════════════════════════
+
+function renderProblem(problem) {
+  S.currentProblem = problem;
+  S.selectedAnswer = null;
+
+  document.getElementById('probCategory').textContent = problem.category;
+  document.getElementById('probQuestion').textContent = problem.question;
+
+  // Extra block (math / code)
+  const extraEl = document.getElementById('probExtra');
+  if (problem.extra) {
+    const cls = problem.extra.type === 'code' ? 'code-box' : 'math-box';
+    extraEl.innerHTML = `<div class="${cls}">${escapeHtml(problem.extra.content)}</div>`;
+  } else {
+    extraEl.innerHTML = '';
+  }
+
+  // Options
+  const optsEl = document.getElementById('probOptions');
+  optsEl.innerHTML = problem.options.map(opt => `
+    <div class="opt" onclick="selectOption(this, '${escapeHtml(opt)}')">
+      <div class="radio-dot"></div>
+      <span class="opt-text">${escapeHtml(opt)}</span>
+    </div>
+  `).join('');
+
+  document.getElementById('submitBtn').disabled = true;
+}
+
+function selectOption(el, value) {
+  // Clear previous selection
+  document.querySelectorAll('#probOptions .opt').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  S.selectedAnswer = value;
+  document.getElementById('submitBtn').disabled = false;
+}
+
+// ═══════════════════════════════════════════════════════
+//  MAIN FLOW
+// ═══════════════════════════════════════════════════════
+
+async function submitPost() {
+  const text = document.getElementById('postContent').value.trim();
+  if (!text) return;
+  S.postText = text;
+  S.draft = text;
+
+  // ── Analyzing ──
+  setState('analyzing');
+
+  // Populate preview
+  const preview = document.getElementById('scanPreview');
+  preview.innerHTML = '<div class="scan-line"></div>' + escapeHtml(text);
+
+  // Show scan chips
+  const chips = document.getElementById('kwChips');
+  chips.innerHTML = SCAN_KEYWORDS.map(kw =>
+    `<span class="kchip" id="chip-${kw.replace(/\s+/g,'-')}">${kw}</span>`
+  ).join('');
+
+  // Animate chip detection
+  const lower = text.toLowerCase();
+  let anyHit = false;
+  for (const kw of SCAN_KEYWORDS) {
+    await sleep(280);
+    if (lower.includes(kw.toLowerCase())) {
+      const chip = document.getElementById('chip-' + kw.replace(/\s+/g,'-'));
+      if (chip) chip.classList.add('hit');
+      anyHit = true;
+    }
+  }
+
+  await sleep(500);
+
+  const result = detectAI(text);
+
+  if (result.isAI || anyHit) {
+    S.foundKeywords = result.keywords.length ? result.keywords : SCAN_KEYWORDS.filter(k => lower.includes(k.toLowerCase()));
+
+    // Populate challenge panel
+    document.getElementById('flaggedPreview').innerHTML = highlightKeywords(text, S.foundKeywords);
+
+    const tagsEl = document.getElementById('kwTags');
+    tagsEl.innerHTML = S.foundKeywords.map(kw => `<span class="kw-tag">${escapeHtml(kw)}</span>`).join('');
+
+    renderProblem(getRandomProblem());
+    setState('challenged');
+  } else {
+    document.getElementById('safePostText').textContent = text;
+    setState('safe');
+  }
+}
+
+function refreshProblem() {
+  renderProblem(getRandomProblem(S.currentProblem?.id));
+}
+
+async function submitAnswer() {
+  if (!S.selectedAnswer || !S.currentProblem) return;
+
+  const correct = S.selectedAnswer === S.currentProblem.correct;
+  const opts = document.querySelectorAll('#probOptions .opt');
+
+  // Show correct / wrong highlights
+  opts.forEach(opt => {
+    const txt = opt.querySelector('.opt-text').textContent;
+    if (txt === S.currentProblem.correct) opt.classList.add('correct-opt');
+    else if (txt === S.selectedAnswer && !correct) opt.classList.add('wrong-opt');
+  });
+
+  document.getElementById('submitBtn').disabled = true;
+  document.querySelector('.challenge-actions .btn-ghost').disabled = true;
+
+  await sleep(900);
+
+  if (correct) {
+    // ── Success ──
+    document.getElementById('successPostText').textContent = S.postText;
+    document.getElementById('successExplain').innerHTML =
+      `<strong>🎯 Correct!</strong> ${escapeHtml(S.currentProblem.explanation)}`;
+    setState('success');
+  } else {
+    // ── Failure ──
+    document.getElementById('failureDraft').textContent =
+      S.postText.length > 80 ? S.postText.slice(0, 80) + '…' : S.postText;
+    document.getElementById('correctAnswerReveal').textContent = S.currentProblem.correct;
+    document.getElementById('explanationReveal').textContent = S.currentProblem.explanation;
+    setState('failure');
+  }
+}
+
+function resetApp() {
+  S = { stage: 'compose', postText: '', foundKeywords: [], currentProblem: null, selectedAnswer: null, draft: null };
+  document.getElementById('postContent').value = '';
+  updateCharCount();
+  setState('compose');
+}
+
+function tryAgain() {
+  // Re-populate the composer with draft and go straight to challenge
+  renderProblem(getRandomProblem());
+  document.getElementById('flaggedPreview').innerHTML = highlightKeywords(S.draft || '', S.foundKeywords);
+  document.querySelector('.challenge-actions .btn-ghost').disabled = false;
+  setState('challenged');
+}
+
+function viewDraft() {
+  document.getElementById('postContent').value = S.draft || '';
+  updateCharCount();
+  setState('compose');
+}
+
+// Init
+updateCharCount();
+</script>
+</body>
+</html>
