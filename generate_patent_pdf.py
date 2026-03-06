@@ -51,7 +51,7 @@ html = f"""<!DOCTYPE html>
     font-family: 'Times New Roman', Times, serif;
     font-size: 12pt;
     line-height: 1.6;
-    margin: 1in 1in 1in 1.5in;
+    margin: 1in;
     color: #000;
   }}
   h1 {{ font-size: 16pt; text-align: center; margin-bottom: 0.5em; }}
