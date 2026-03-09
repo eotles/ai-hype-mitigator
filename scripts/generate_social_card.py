@@ -51,7 +51,6 @@ def main():
     WHITE = (255, 255, 255)
     WHITE_70 = (255, 255, 255, 178)
     DARK_BAND = (15, 23, 42)           # near-black bottom bar
-    BADGE_BG = (255, 255, 255, 38)     # semi-transparent white
 
     # ── Shield icon ──────────────────────────────────────────────────────────
     shield_x, shield_y = 80, 90
@@ -68,57 +67,11 @@ def main():
     font_sub = ImageFont.truetype(FONT_SANS, 42)
     draw.text((56, 170), "Verified AI Discourse", font=font_sub, fill=WHITE)
 
-    # ── Body text (NO strikethrough) ──────────────────────────────────────────
+    # ── Body text ─────────────────────────────────────────────────────────────
     font_body = ImageFont.truetype(FONT_SANS, 34)
     WHITE_MUTED = (220, 225, 255)
     draw.text((56, 240), "Ensuring AI content creators demonstrate", font=font_body, fill=WHITE_MUTED)
     draw.text((56, 285), "real expertise before posting.", font=font_body, fill=WHITE_MUTED)
-
-    # ── Badges ────────────────────────────────────────────────────────────────
-    font_badge = ImageFont.truetype(FONT_SANS_BOLD, 26)
-    badges = ["Quiz-based verification", "AI-powered analysis", "Open source"]
-    badge_y = 370
-    pad_x, pad_y = 20, 10
-    radius = 22
-    x_cursor = 56
-
-    # Use RGBA layer for semi-transparent badges
-    overlay = Image.new("RGBA", (WIDTH, HEIGHT), (0, 0, 0, 0))
-    odraw = ImageDraw.Draw(overlay)
-
-    for label in badges:
-        bbox = font_badge.getbbox(label)
-        tw = bbox[2] - bbox[0]
-        th = bbox[3] - bbox[1]
-        bw = tw + pad_x * 2
-        bh = th + pad_y * 2
-        # Rounded rect
-        odraw.rounded_rectangle(
-            [x_cursor, badge_y, x_cursor + bw, badge_y + bh],
-            radius=radius,
-            fill=(255, 255, 255, 50),
-            outline=(255, 255, 255, 100),
-            width=2,
-        )
-        x_cursor += bw + 20
-
-    img = img.convert("RGBA")
-    img = Image.alpha_composite(img, overlay)
-    img = img.convert("RGB")
-    draw = ImageDraw.Draw(img)
-
-    # Re-draw badge text on top
-    x_cursor = 56
-    for label in badges:
-        bbox = font_badge.getbbox(label)
-        tw = bbox[2] - bbox[0]
-        th = bbox[3] - bbox[1]
-        bw = tw + pad_x * 2
-        bh = th + pad_y * 2
-        text_x = x_cursor + pad_x - bbox[0]
-        text_y = badge_y + pad_y - bbox[1]
-        draw.text((text_x, text_y), label, font=font_badge, fill=WHITE)
-        x_cursor += bw + 20
 
     # ── Bottom bar with URL ───────────────────────────────────────────────────
     bar_h = 68
@@ -126,7 +79,7 @@ def main():
     font_url = ImageFont.truetype(FONT_SANS, 30)
     draw.text((56, HEIGHT - bar_h + 18), "eotles.com/ai-hype-mitigator", font=font_url, fill=(148, 163, 184))
 
-    out_path = "docs/social-card.png"
+    out_path = "../docs/social-card.png"
     img.save(out_path, "PNG", optimize=True)
     print(f"Saved {out_path} ({img.size[0]}x{img.size[1]})")
 
